@@ -2,6 +2,8 @@ import numpy as np
 import math
 import sys
 
+from numpy.core.fromnumeric import shape
+
 '''
 Property of: NavINST Laboratory
 Author: Marwan A. Rashed
@@ -18,7 +20,8 @@ class InitINS ():
         ## Position components
         self.Init_Lat, self.Init_Long, self.Init_Alt =  np.deg2rad(latitude) , np.deg2rad(longitude), altitude
         ## Attitude angles
-        self.Init_Roll, self.Init_Pitch, self.Init_Azimuth =  roll, pitch, np.deg2rad(azimuth)
+        self.Init_Roll, self.Init_Pitch, self.Init_Azimuth =   np.deg2rad (roll) , np.deg2rad (pitch) , np.deg2rad(azimuth)
+        # self.latitude, self.longitude, self.altitude = latitude, longitude, altitude
 
         ## INS Mechanization constant variables
         self.a= 6378137 # the constant for Earth Radii Rm and Rn
@@ -32,7 +35,7 @@ class InitINS ():
         self.a4, self.a5, self.a6 = -0.000003087691089 , 0.000000004397731 , 0.000000000000721
 
         #### Intialization of change in local velocity vector #####
-        self.Delta_Vl_previous = np.transpose ( np.zeros ((3)) ) 
+        self.Delta_Vl_previous = np.array ( np.zeros ((3))).transpose() 
 
     def Init_Rbl (self): 
         """
@@ -61,8 +64,8 @@ class InitINS ():
 
         self.rbl33 = np.cos(self.Init_Roll) * np.cos(self.Init_Pitch)
         ##### Matrix formulation ######
-        self.Rb_l = np.array ([[self.rbl11,self.rbl12,self.rbl13],[self.rbl21,self.rbl22,self.rbl23],[self.rbl31,self.rbl32,self.rbl33]])
-        # return self.Rb_l
+        self.Rb_l = np.ndarray (shape= (3,3), dtype=float ,buffer= np.array([[self.rbl11,self.rbl12,self.rbl13],[self.rbl21,self.rbl22,self.rbl23],[self.rbl31,self.rbl32,self.rbl33]]))
+        print ("Intial R_Bl:",self.Rb_l)
 
     def Init_Quatrenion (self):
         """
@@ -71,13 +74,15 @@ class InitINS ():
         """
         # Quatrenions Formulation
         ##### Quatrnions declaration #####
-        self.Fourth_Quatrenion = np.sqrt (1 + self.rbl11 + self.rbl22 + self.rbl33) / 2
-        self.First_Quatrenion = 0.25 * (self.rbl32 - self.rbl23 ) / self.Fourth_Quatrenion
-        self.Second_Quatrenion = 0.25*( self.rbl13 - self.rbl31 ) / self.Fourth_Quatrenion
-        self.Third_Quatrenion = 0.25*( self.rbl21 - self.rbl12) / self.Fourth_Quatrenion
+        Fourth_Quatrenion = np.sqrt (1 + self.rbl11 + self.rbl22 + self.rbl33) * 0.5
+        First_Quatrenion = 0.25 * (self.rbl32 - self.rbl23 ) / Fourth_Quatrenion
+        Second_Quatrenion = 0.25*( self.rbl13 - self.rbl31 ) / Fourth_Quatrenion
+        Third_Quatrenion = 0.25*( self.rbl21 - self.rbl12) / Fourth_Quatrenion
         #### Quatrenions Vector formulation #####
-        self.Quatrenion = np.transpose( np.array([self.First_Quatrenion , self.Second_Quatrenion , self.Third_Quatrenion , self.Fourth_Quatrenion]) )
+        self.Quatrenion =  np.array([First_Quatrenion , Second_Quatrenion , Third_Quatrenion , Fourth_Quatrenion]).transpose()
+        print ("Intial Quaterenion before correction:", self.Quatrenion)
         self.Quatrenion = self.Quatrenion / np.linalg.norm(self.Quatrenion)
+        print ("Intial Quaterenion after correction:",self.Quatrenion)
         # return self.Quatrenion
 
     def Init_Localg (self):
@@ -94,7 +99,9 @@ class InitINS ():
         Input: The Initial 3D velocity vector 
         Output: None, updates the local shared velocity vector variable.
         '''
-        self.vl = np.array([Initial_ve, Initial_vn, Initial_vu])
+        self.vl = np.array([Initial_ve, Initial_vn, Initial_vu]).transpose()
+        print ("Intial Velocities", self.vl )
+
 
 
 
