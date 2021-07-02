@@ -23,7 +23,7 @@ Ref_Solution = pd.read_csv ('C:\\Users\\marwa\\Desktop\\INS\\INSfullMech\\Toront
 # print (Ref_Solution)
 
 # print(Ref_Solution.iloc[0,3])
-start_time =  0 #1600
+start_time =  1600
 ###### Initial position, attitudes
 Init_lat, Init_long, Init_alt = Ref_Solution['Lat'][start_time], Ref_Solution['Long'][start_time], Ref_Solution['Alt'][start_time]
 Init_roll, Init_pitch, Init_azimuth = Ref_Solution['Roll'][start_time], Ref_Solution['Pitch'][start_time], Ref_Solution['Azi'][start_time]

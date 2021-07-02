@@ -3,8 +3,8 @@ import numpy as np
 import math
 
 class Mechanization (InitINS): 
-    def __init__ (self, latitude, longitude, altitude, roll, pitch, yaw):
-        super().__init__(latitude, longitude, altitude, roll, pitch, yaw)
+    def __init__ (self, latitude, longitude, altitude, roll, pitch, azimuth):
+        super().__init__(latitude, longitude, altitude, roll, pitch, azimuth)
         self.Init_Rbl ()
         self.Init_Quatrenion ()
         self.Init_Localg ()
@@ -13,12 +13,12 @@ class Mechanization (InitINS):
     def RadiiM (self, latitude):
         latitude = np.deg2rad(latitude)
         # print ("Latitude in radian", latitude )
-        self.Rm =  ( self.a *(1-self.e2) ) / ( (1- self.e2 * np.sin(latitude) * np.sin(latitude) )**(1.5) )
-        # print ("Meredian Radius", self.Rm )
+        self._Rm =  ( self.a *(1-self.e2) ) / ( (1- self.e2 * np.sin(latitude) * np.sin(latitude) )**(1.5) )
+        # print ("Meredian Radius", self._Rm )
     def RadiiN (self,latitude):
         latitude = np.deg2rad(latitude)
-        self.Rn = self.a / np.sqrt ( 1- ( self.e2 * np.sin (latitude) * np.sin (latitude) ) )
-        # print ("nORMAL Radius", self.Rn )
+        self._Rn = self.a / np.sqrt ( 1- ( self.e2 * np.sin (latitude) * np.sin (latitude) ) )
+        # print ("nORMAL Radius", self._Rn )
     ### Calculate Transformation from ECF to Local level frame
     def R_EL (self, latitude, longitude) :
         """
@@ -48,7 +48,10 @@ class Mechanization (InitINS):
 
         self.rel33 = np.sin (latitude)
         ##### Matrix formulation ######
-        self.Re_l = np.ndarray (shape= (3,3), dtype=float ,buffer= np.array ([[self.rel11,self.rel12,self.rel13],[self.rel21,self.rel22,self.rel23],[self.rel31,self.rel32,self.rel33]]))
+        self._Re_l = np.ndarray (shape= (3,3), dtype=float
+                     ,buffer= np.array ([[self.rel11,self.rel12,self.rel13]
+                     ,[self.rel21,self.rel22,self.rel23]
+                     ,[self.rel31,self.rel32,self.rel33]]))
 
         
     def WIE_L (self, latitude) :
@@ -57,10 +60,10 @@ class Mechanization (InitINS):
         Output: transforms the earth angular velocity w_e into the local level frame to be the vector WIE_L using the R_EL transformation matrix
         '''
         latitude = np.deg2rad(latitude)
-        we_transform = np.vstack([0,0,self.We])
-        # self.wie_l = self.Re_l @ we_transform
-        self.wie_l = np.array([0,self.We * np.cos(latitude),self.We * np.sin(latitude)]).transpose()
-        # print ("Transformed earth rotation vector",self.wie_l)
+        # we_transform = np.vstack([0,0,self.We])
+        # self._wie_l = self._Re_l @ we_transform
+        self._wie_l = np.array([0,self.We * np.cos(latitude),self.We * np.sin(latitude)]).transpose()
+        # print ("Transformed earth rotation vector",self._wie_l)
 
     def WEL_L (self, latitude, altitude):
         '''
@@ -68,16 +71,16 @@ class Mechanization (InitINS):
         Output: calculates the angular velocities vector using the velocity vector
         '''
         latitude = np.deg2rad(latitude)
-        wel_l1 = - self.vl [1] / (self.Rm + altitude)
-        wel_l2 = self.vl [0]/ ( self.Rn + altitude)
-        wel_l3 = ( self.vl [0] * np.tan (latitude) )  /( self.Rn + altitude)
-        self.wel_l = np.array ([wel_l1, wel_l2, wel_l3]).transpose()
-        # print ("wel_l",self.wel_l)
+        wel_l1 = - self._vl [1] / (self._Rm + altitude)
+        wel_l2 = self._vl [0]/ ( self._Rn + altitude)
+        wel_l3 = ( self._vl [0] * np.tan (latitude) )  /( self._Rn + altitude)
+        self._wel_l = np.array ([wel_l1, wel_l2, wel_l3]).transpose()
+        # print ("wel_l",self._wel_l)
     def WLB_B (self, wx, wy, wz) :
         wib_b = np.array([wx,wy,wz]).transpose()
         # print ("gyro rates",wib_b)
-        self.wlb_b = wib_b -  np.matmul ( np.transpose(self.Rb_l) , ( self.wel_l + self.wie_l ) )
-        # print ("WLB_B",self.wlb_b)
+        self._wlb_b = wib_b -  np.matmul ( np.transpose(self._Rb_l) , ( self._wel_l + self._wie_l ) )
+        # print ("WLB_B",self._wlb_b)
     
     def SkewMatrix_WLB_B (self):
         '''
@@ -85,21 +88,22 @@ class Mechanization (InitINS):
         Output: The skewed Wlb_b matrix
         It calculates the skew matrix of the angular velocity components
         '''
-        self.skewmatrix_wlb_b = np.ndarray (shape= (4,4), dtype=float ,buffer= np.array([[0,self.wlb_b [2] , -self.wlb_b[1] , self.wlb_b[0]]
-                                        ,[-self.wlb_b[2], 0, self.wlb_b[0], self.wlb_b[1]]
-                                        ,[self.wlb_b[1], - self.wlb_b[0], 0 ,self.wlb_b[2]]
-                                        ,[-self.wlb_b[0], - self.wlb_b[1], -self.wlb_b[2], 0]]) )
-        # print ("SkewMatrix_WLB_B",self.skewmatrix_wlb_b)
+        self._skewmatrix_wlb_b = np.ndarray (shape= (4,4), dtype=float 
+                                ,buffer= np.array([[0,self._wlb_b [2] , -self._wlb_b[1] , self._wlb_b[0]]
+                                        ,[-self._wlb_b[2], 0, self._wlb_b[0], self._wlb_b[1]]
+                                        ,[self._wlb_b[1], - self._wlb_b[0], 0 ,self._wlb_b[2]]
+                                        ,[-self._wlb_b[0], - self._wlb_b[1], -self._wlb_b[2], 0]]) )
+        # print ("SkewMatrix_WLB_B",self._skewmatrix_wlb_b)
  
     def UpdateQuatrenion (self, delta_time):
         '''
         Input: The change in time (Delta Time)
         Output: Updates the Quatrenion vector
         '''
-        Q_dot = 0.5 * (self.skewmatrix_wlb_b @ self.Quatrenion)
-        self.Quatrenion =  self.Quatrenion + (delta_time * Q_dot)
-        # print ("Updated Quatrenions",self.Quatrenion)
-        self.Quatrenion = self.Quatrenion /  np.linalg.norm(self.Quatrenion)
+        Q_dot = 0.5 * (self._skewmatrix_wlb_b @ self._Quatrenion)
+        self._Quatrenion =  self._Quatrenion + (delta_time * Q_dot)
+        # print ("Updated Quatrenions",self._Quatrenion)
+        self._Quatrenion = self._Quatrenion /  np.linalg.norm(self._Quatrenion)
 
     def UpdateRBL_Q (self):
         '''
@@ -107,29 +111,32 @@ class Mechanization (InitINS):
         Ouput: Updates the Rotation from body to local level frame using the updated Quatrnions
         '''
          ##### First Row  #####
-        self.rbl11 = ( self.Quatrenion[0]**2 ) - ( self.Quatrenion[1]**2 ) - ( self.Quatrenion[2]**2 ) + ( self.Quatrenion[3]**2 ) 
+        self.rbl11 = ( self._Quatrenion[0]**2 ) - ( self._Quatrenion[1]**2 ) - ( self._Quatrenion[2]**2 ) + ( self._Quatrenion[3]**2 ) 
 
-        self.rbl12 = 2 * ( ( self.Quatrenion[0] * self.Quatrenion[1] ) - ( self.Quatrenion[2] *  self.Quatrenion[3] ) )
+        self.rbl12 = 2 * ( ( self._Quatrenion[0] * self._Quatrenion[1] ) - ( self._Quatrenion[2] *  self._Quatrenion[3] ) )
 
-        self.rbl13 = 2 * ( ( self.Quatrenion[0] * self.Quatrenion[2] ) + ( self.Quatrenion[1] * self.Quatrenion[3] ) ) 
+        self.rbl13 = 2 * ( ( self._Quatrenion[0] * self._Quatrenion[2] ) + ( self._Quatrenion[1] * self._Quatrenion[3] ) ) 
 
         ##### Second Row #####
-        self.rbl21 =  2 * ( ( self.Quatrenion[0] * self.Quatrenion[1] ) + ( self.Quatrenion[2] *  self.Quatrenion[3] ) )
+        self.rbl21 =  2 * ( ( self._Quatrenion[0] * self._Quatrenion[1] ) + ( self._Quatrenion[2] *  self._Quatrenion[3] ) )
 
-        self.rbl22 =  - (self.Quatrenion[0]**2) + (self.Quatrenion[1]**2 ) - (self.Quatrenion[2]**2) + ( self.Quatrenion[3]**2 )
+        self.rbl22 =  - (self._Quatrenion[0]**2) + (self._Quatrenion[1]**2 ) - (self._Quatrenion[2]**2) + ( self._Quatrenion[3]**2 )
 
-        self.rbl23 = 2 * ( ( self.Quatrenion[1] * self.Quatrenion[2] ) - ( self.Quatrenion[0] * self.Quatrenion[3] ) )
+        self.rbl23 = 2 * ( ( self._Quatrenion[1] * self._Quatrenion[2] ) - ( self._Quatrenion[0] * self._Quatrenion[3] ) )
 
         ##### Third Row ######
-        self.rbl31 = 2 * ( ( self.Quatrenion[0] * self.Quatrenion[2] ) - ( self.Quatrenion[1] * self.Quatrenion[3] ) )
+        self.rbl31 = 2 * ( ( self._Quatrenion[0] * self._Quatrenion[2] ) - ( self._Quatrenion[1] * self._Quatrenion[3] ) )
 
-        self.rbl32 = 2 * ( ( self.Quatrenion[1] * self.Quatrenion[2] ) + ( self.Quatrenion[0] * self.Quatrenion[3] ) )
+        self.rbl32 = 2 * ( ( self._Quatrenion[1] * self._Quatrenion[2] ) + ( self._Quatrenion[0] * self._Quatrenion[3] ) )
 
-        self.rbl33 = - (self.Quatrenion[0]**2) - (self.Quatrenion[1]**2 ) + (self.Quatrenion[2]**2) + ( self.Quatrenion[3]**2 )
+        self.rbl33 = - (self._Quatrenion[0]**2) - (self._Quatrenion[1]**2 ) + (self._Quatrenion[2]**2) + ( self._Quatrenion[3]**2 )
 
         ##### Matrix formulation ######
-        self.Rb_l = np.ndarray (shape= (3,3), dtype=float ,buffer= np.array ([[self.rbl11,self.rbl12,self.rbl13],[self.rbl21,self.rbl22,self.rbl23],[self.rbl31,self.rbl32,self.rbl33]]))
-        # print ("Updated R_BL",self.Rb_l)
+        self._Rb_l = np.ndarray (shape= (3,3), dtype=float 
+                    ,buffer= np.array ([[self.rbl11,self.rbl12,self.rbl13]
+                    ,[self.rbl21,self.rbl22,self.rbl23]
+                    ,[self.rbl31,self.rbl32,self.rbl33]]))
+        # print ("Updated R_BL",self._Rb_l)
 
     def UpdateRBL_Attitude (self, roll, pitch, azimuth): 
         """
@@ -159,67 +166,71 @@ class Mechanization (InitINS):
 
         self.rbl33 = np.cos(roll) * np.cos(pitch)
         ##### Matrix formulation ######
-        self.Rb_l = np.ndarray (shape= (3,3), dtype=float ,buffer= np.array ([[self.rbl11,self.rbl12,self.rbl13],[self.rbl21,self.rbl22,self.rbl23],[self.rbl31,self.rbl32,self.rbl33]]))
-        rbl_attitude = self.Rb_l
-        return rbl_attitude
+        self._Rb_l = np.ndarray (shape= (3,3), dtype=float 
+                    ,buffer= np.array ([[self.rbl11,self.rbl12,self.rbl13]
+                    ,[self.rbl21,self.rbl22,self.rbl23]
+                    ,[self.rbl31,self.rbl32,self.rbl33]]))
+
 
     def UpdateAttitude (self):
         '''
         Input: None
         Output: Returns the updated attitude components (roll, pitch yaw (azimuth)) 
         '''
-        self.pitch  = np.rad2deg(np.arctan2( self.rbl32 , np.sqrt( (self.rbl12)**2 + (self.rbl22)**2  ) ) )
-        self.roll   = - np.rad2deg ( np.arctan2( self.rbl31 , self.rbl33 ) )
-        self.azimuth    = np.rad2deg(np.arctan2( self.rbl12 , self.rbl22 ))
-        # print ("attitude angles", self.roll, self.pitch ,self.azimuth)
+        self._pitch  = np.rad2deg(np.arctan2( self.rbl32 , np.sqrt( (self.rbl12)**2 + (self.rbl22)**2  ) ) )
+        self._roll   = - np.rad2deg ( np.arctan2( self.rbl31 , self.rbl33 ) )
+        self._azimuth    = np.rad2deg(np.arctan2( self.rbl12 , self.rbl22 ))
+        # print ("attitude angles", self._roll, self._pitch ,self._azimuth)
 
 
     def OMEGA_IE_L (self):
-        self.omega_ie_l = np.ndarray (shape= (3,3), dtype=float ,buffer= np.array([[0, - self.wie_l[2], self.wie_l[1]]
-                                ,[self.wie_l[2], 0 , - self.wie_l[0]]
-                                ,[- self.wie_l[1], self.wie_l[0], 0]]) )
-        # print ("OMEGA_IE_L: ",self.omega_ie_l)
+        self._omega_ie_l = np.ndarray (shape= (3,3), dtype=float
+                            ,buffer= np.array([[0, - self._wie_l[2], self._wie_l[1]]
+                                ,[self._wie_l[2], 0 , - self._wie_l[0]]
+                                ,[- self._wie_l[1], self._wie_l[0], 0]]) )
+        # print ("OMEGA_IE_L: ",self._omega_ie_l)
     
     def OMEGA_EL_L (self):
-        self.omega_el_l = np.ndarray (shape= (3,3), dtype=float ,buffer= np.array ([[0, - self.wel_l[2], self.wel_l[1]]
-                                ,[self.wel_l[2], 0 , - self.wel_l[0]]
-                                ,[- self.wel_l[1], self.wel_l[0], 0]]) )
-        # print ("OMEGA_EL_L: ",self.omega_el_l)
+        self._omega_el_l = np.ndarray (shape= (3,3), dtype=float 
+                            ,buffer= np.array ([[0, - self._wel_l[2], self._wel_l[1]]
+                                ,[self._wel_l[2], 0 , - self._wel_l[0]]
+                                ,[- self._wel_l[1], self._wel_l[0], 0]]) )
+        # print ("OMEGA_EL_L: ",self._omega_el_l)
     def UpdateAccelerometers (self, fx, fy, fz):
-        self.fb = np.array([fx,fy,fz]).transpose()
-        # print ("Accelerometers: ",self.fb)
+        self._fb = np.array([fx,fy,fz]).transpose()
+        # print ("Accelerometers: ",self._fb)
 
     def UpdateG (self,g):
-        self.gVector = np.array([ 0, 0, -g]).transpose() 
-        # print ("updated g constant: ", self.gVector)
+        self._gVector = np.array([ 0, 0, -g]).transpose() 
+        # print ("updated g constant: ", self._gVector)
     def UpdateDeltaVelocity (self, delta_time):
-        component_a = (self.Rb_l @ self.fb)
+        component_a = (self._Rb_l @ self._fb)
         # print ("delta velocity Component_a", component_a)
-        component_b = ( (2 * self.omega_ie_l + self.omega_el_l) @ self.vl )
+        component_b = ( (2 * self._omega_ie_l + self._omega_el_l) @ self._vl )
         # print ("delta velocity Component_a", component_b) 
-        delta_v_t = component_a - component_b + (self.gVector)
-        self.Delta_Vl_current = delta_v_t * delta_time
-        # print ("self.Delta_Vl_current", self.Delta_Vl_current )
+        delta_v_t = component_a - component_b + (self._gVector)
+        self._Delta_Vl_current = delta_v_t * delta_time
+        # print ("self._Delta_Vl_current", self._Delta_Vl_current )
     
     def UpdateVelocity (self):
-        self.vl = self.vl + 0.5 * (self.Delta_Vl_current + self.Delta_Vl_previous )
-        # print ("Updated Velocities", self.vl )
-        self.Delta_Vl_previous = self.Delta_Vl_current
-        # self.vl = np.array([Ve,Vn,Vu])
+        self._vl = self._vl + 0.5 * (self._Delta_Vl_current + self._Delta_Vl_previous )
+        # print ("Updated Velocities", self._vl )
+        self._Delta_Vl_previous = self._Delta_Vl_current
+        # self._vl = np.array([Ve,Vn,Vu])
 
     def UpdatePosition (self, prev_latitude, prev_longitude, prev_altitude, ve_Prev, vn_Prev, vu_Prev, delta_time):
-        ve, vn, vu = self.vl[0], self.vl[1], self.vl[2]
-        self.altitude = prev_altitude +  (0.5 * (vu + vu_Prev) * delta_time)
-        self.latitude = prev_latitude + np.rad2deg ( (0.5* (vn + vn_Prev) * delta_time ) / (self.Rn + self.altitude) ) 
-        self.longitude = prev_longitude + np.rad2deg ( ( 0.5 * (ve + ve_Prev)  * delta_time ) / ((self.Rn + prev_altitude) * np.cos(self.latitude)) ) 
-        # print ("Updated Positions",  [self.latitude, self.longitude, self.altitude ])
+        ve, vn, vu = self._vl[0], self._vl[1], self._vl[2]
+        self._altitude = prev_altitude +  (0.5 * (vu + vu_Prev) * delta_time)
+        self._latitude = prev_latitude + np.rad2deg ( (0.5* (vn + vn_Prev) * delta_time ) / (self._Rn + self._altitude) ) 
+        self._longitude = prev_longitude + np.rad2deg ( ( 0.5 * (ve + ve_Prev)  * delta_time ) / ((self._Rn + prev_altitude) * np.cos(self._latitude)) ) 
+        # print ("Updated Positions",  [self._latitude, self._longitude, self._altitude ])
          
     def CorrectAzimuth (self):
-        if self.azimuth >= 360:
-            self.azimuth = self.azimuth - 360.0
-        elif self.azimuth < 0:
-            self.azimuth = self.azimuth + 360.0
-        # print ("Corrected azimuth", self.azimuth)
+        if self._azimuth >= 360:
+            self._azimuth = self._azimuth - 360.0
+        elif self._azimuth < 0:
+            self._azimuth = self._azimuth + 360.0
+        # print ("Corrected azimuth", self._azimuth)
 
             
     def compile (self, dt, wx, wy, wz
@@ -266,7 +277,7 @@ class Mechanization (InitINS):
         self.UpdatePosition (latitude, longitude, altitude,  ve_Prev, vn_Prev, vu_Prev, dt)
 
         ##### Return the updated full navigation components #####
-        return self.latitude, self.longitude, self.altitude , self.vl[0],self.vl[1], self.vl[2], self.roll, self.pitch, self.azimuth
+        return self._latitude, self._longitude, self._altitude , self._vl[0],self._vl[1], self._vl[2], self._roll, self._pitch, self._azimuth
                 
 
 
