@@ -21,6 +21,7 @@ class InitINS ():
         self.Init_Lat, self.Init_Long, self.Init_Alt =  np.deg2rad(latitude) , np.deg2rad(longitude), altitude
         ## Attitude angles
         self.Init_Roll, self.Init_Pitch, self.Init_Azimuth =   np.deg2rad (roll) , np.deg2rad (pitch) , np.deg2rad(azimuth)
+        
 
         ## INS Mechanization constant variables
         self.a= 6378137 # the constant for Earth Radii Rm and Rn
