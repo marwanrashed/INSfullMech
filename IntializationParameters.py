@@ -1,7 +1,4 @@
 import numpy as np 
-import math
-import sys
-
 from numpy.core.fromnumeric import shape
 
 '''

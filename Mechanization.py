@@ -1,6 +1,6 @@
 from IntializationParameters import InitINS
 import numpy as np
-import math
+
 
 class Mechanization (InitINS): 
     def __init__ (self, latitude, longitude, altitude, roll, pitch, azimuth, dt):
@@ -363,7 +363,7 @@ class Mechanization (InitINS):
     @property
     def delta_time (self):
         return self._delta_time
-    
+
 ############################## Setters ############################
 ########### States ##########    
     @latitude.setter
