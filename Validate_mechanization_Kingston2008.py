@@ -28,6 +28,9 @@ ref_data =  load_REF_dataset(ref_file_path, Freq_INS)
 IMU_data = load_IMU_dataset(imu_file_path, KVH, Freq_INS)
 # IMU Keys are:  dict_keys(['time', 'fx', 'fy', 'fz', 'wx', 'wy', 'wz'])
 ref_data, IMU_data =  syncronize_INS(ref_data , IMU_data)
+
+print ("The Imu original first timestamp", IMU_data['time'][0])
+print ("The reference original first timestamp", ref_data['time'][0])
 ####### Declare biases #########
 fx_bias = -70.88e-4 
 fy_bias = 40.80e-4 
@@ -91,4 +94,6 @@ imu_data_mechanized['vu'], ref_data_trimmed['vu'] = vu, ref_data['Vu'][start:dur
 
 ##############Plotting ###################
 ############## Full Diagnosis ################
+print ("The Imu first timestamp", imu_data_mechanized['time'][0])
+print ("The reference first timestamp", ref_data_trimmed['time'][0])
 HelperFuncs.full_diagnosis ( ref_data_trimmed,  imu_data_mechanized, 'INS standalone')

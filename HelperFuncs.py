@@ -99,6 +99,8 @@ def plot_tri_trajectory(sig_ref, sig_imu, sig_aux, title_text, solution_label):
 
 def full_diagnosis ( ref_data,  sig_data, label):
     solution_label = label
+    ##########################Plot Trajectory ########################
+    plot_bi_trajectory(ref_data, sig_data, 'Trajectory', solution_label)
     ########################## Plot Position errors ###################
     plot_error(ref_data['lat'],ref_data['time'], sig_data['lat'] ,sig_data['time'], 'Latitude errors', 'error in degrees',  )
     plot_error(ref_data['lon'],ref_data['time'], sig_data['lon'],sig_data['time'], 'Longitude errors', 'error in degrees')
@@ -124,5 +126,4 @@ def full_diagnosis ( ref_data,  sig_data, label):
     plot_to_compare(ref_data['ve'],ref_data['time'], sig_data['ve'],sig_data['time'], 'East Velocity ', 'm/s', solution_label)
     plot_to_compare(ref_data['vn'],ref_data['time'], sig_data['vn'],sig_data['time'], 'North Velocity ', 'm/s', solution_label)
     plot_to_compare(ref_data['vu'],ref_data['time'], sig_data['vu'],sig_data['time'], 'Up Velocity ', 'm/s', solution_label)
-    ##########################Plot Trajectory ########################
-    plot_bi_trajectory(ref_data, sig_data, 'Trajectory', solution_label)
+  
