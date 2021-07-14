@@ -32,7 +32,7 @@ class InitINS ():
         self.a4, self.a5, self.a6 = -0.000003087691089 , 0.000000004397731 , 0.000000000000721
 
         #### Intialization of change in local velocity vector #####
-        self._Delta_Vl_previous = np.array ( np.zeros ((3))).transpose() 
+        self._Delta_Vl_previous = np.array ( np.zeros ((3)))
 
     def Init_Rbl (self): 
         """
@@ -76,7 +76,7 @@ class InitINS ():
         Second_Quatrenion = 0.25*( self.rbl13 - self.rbl31 ) / Fourth_Quatrenion
         Third_Quatrenion = 0.25*( self.rbl21 - self.rbl12) / Fourth_Quatrenion
         #### Quatrenions Vector formulation #####
-        self._Quatrenion =  np.array([First_Quatrenion , Second_Quatrenion , Third_Quatrenion , Fourth_Quatrenion]).transpose()
+        self._Quatrenion =  np.array([First_Quatrenion , Second_Quatrenion , Third_Quatrenion , Fourth_Quatrenion])
         print ("Intial Quaterenion before correction:", self._Quatrenion)
         self._Quatrenion = self._Quatrenion / np.linalg.norm(self._Quatrenion)
         print ("Intial Quaterenion after correction:",self._Quatrenion)
@@ -96,7 +96,7 @@ class InitINS ():
         Input: The Initial 3D velocity vector 
         Output: None, updates the local shared velocity vector variable.
         '''
-        self._vl = np.array([Initial_ve, Initial_vn, Initial_vu]).transpose()
+        self._vl = np.array([Initial_ve, Initial_vn, Initial_vu])
         print ("Intial Velocities", self._vl )
 
 

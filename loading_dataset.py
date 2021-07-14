@@ -92,14 +92,14 @@ def load_REF_dataset(ref_file_path, Freq_INS):
     time_ref = ref_data.get('INS_second')[:,0] 
     #----------------------------------------------------------
     # position info
-    long_ref = ref_data.get('INS_Long')[:,0] * np.pi / 180.0
-    lat_ref = ref_data.get('INS_Lat')[:,0] * np.pi / 180.0
+    long_ref = ref_data.get('INS_Long')[:,0] 
+    lat_ref = ref_data.get('INS_Lat')[:,0] 
     alt_ref = ref_data.get('INS_Alt')[:,0] 
     #----------------------------------------------------------
     #Attitude info
-    roll_ref = ref_data.get('INS_Roll')[:,0] * np.pi / 180.0
-    pitch_ref = ref_data.get('INS_Pitch')[:,0] * np.pi / 180.0
-    azimuth_ref = ref_data.get('INS_Azi')[:,0] * np.pi / 180.0
+    roll_ref = ref_data.get('INS_Roll')[:,0] 
+    pitch_ref = ref_data.get('INS_Pitch')[:,0] 
+    azimuth_ref = ref_data.get('INS_Azi')[:,0] 
     #----------------------------------------------------------
     #Speed Info
     Ve_ref = ref_data.get('INS_ve')[:,0] 

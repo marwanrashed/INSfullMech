@@ -65,7 +65,7 @@ class Mechanization (InitINS):
         latitude = np.deg2rad(self._latitude)
         # we_transform = np.vstack([0,0,self.We])
         # self._wie_l = self._Re_l @ we_transform
-        self._wie_l = np.array([0,self.We * np.cos(latitude),self.We * np.sin(latitude)]).transpose()
+        self._wie_l = np.array([0 , self.We * np.cos(latitude), self.We * np.sin(latitude)])
         # print ("Transformed earth rotation vector",self._wie_l)
 
     def WEL_L (self):
@@ -77,12 +77,12 @@ class Mechanization (InitINS):
         wel_l1 = - self._vl [1] / (self._Rm + self._altitude)
         wel_l2 = self._vl [0]/ ( self._Rn + self._altitude)
         wel_l3 = ( self._vl [0] * np.tan (latitude) )  /( self._Rn + self._altitude)
-        self._wel_l = np.array ([wel_l1, wel_l2, wel_l3]).transpose()
+        self._wel_l = np.array ([wel_l1, wel_l2, wel_l3])
         # print ("wel_l",self._wel_l)
 
 
     def WLB_B (self, wx, wy, wz) :
-        wib_b = np.array([wx,wy,wz]).transpose()
+        wib_b = np.array([wx,wy,wz])
         # print ("gyro rates",wib_b)
         self._wlb_b = wib_b -  np.matmul ( np.transpose(self._Rb_l) , ( self._wel_l + self._wie_l ) )
         # print ("WLB_B",self._wlb_b)
@@ -204,7 +204,7 @@ class Mechanization (InitINS):
                                 ,[- self._wel_l[1], self._wel_l[0], 0]]) )
         # print ("OMEGA_EL_L: ",self._omega_el_l)
     def UpdateAccelerometers (self, fx, fy, fz):
-        self._fb = np.array([fx,fy,fz]).transpose()
+        self._fb = np.array([fx,fy,fz])
         # print ("Accelerometers: ",self._fb)
     
 
@@ -212,7 +212,7 @@ class Mechanization (InitINS):
         latitude = self._latitude
         Proj_Lat = np.sin(latitude) # Projection of the latitude after degree to raddian transformation
         self._Local_g = self.a1  * (1 + (self.a2* (Proj_Lat**2) ) + (   self.a3  * (Proj_Lat**4) ) ) + ( ( self.a4 + (self.a5 * (Proj_Lat**2)) ) *  self._altitude ) + self.a6 * (self._altitude**2)
-        self._gVector = np.array([ 0, 0, - self._Local_g]).transpose() 
+        self._gVector = np.array([ 0, 0, - self._Local_g]) 
         # print ("updated g constant: ", self._gVector)
     def UpdateDeltaVelocity (self):
         component_a = (self._Rb_l @ self._fb)
@@ -233,9 +233,9 @@ class Mechanization (InitINS):
     def UpdatePosition (self):
         ve_Prev, vn_Prev, vu_Prev = self._prev_vl[0], self._prev_vl[1], self._prev_vl[2]
         ve, vn, vu = self._vl[0], self._vl[1], self._vl[2]
-        self._altitude = self._altitude +  (0.5 * (vu + vu_Prev) * self._delta_time)
-        self._latitude = self._latitude + np.rad2deg ( (0.5* (vn + vn_Prev) * self._delta_time ) / (self._Rn + self._altitude) ) 
-        self._longitude = self._longitude + np.rad2deg ( ( 0.5 * (ve + ve_Prev)  * self._delta_time ) / ((self._Rn + self._altitude) * np.cos(self._latitude)) ) 
+        self._altitude = self._altitude +  (0.5 * (vu + vu_Prev ) * self._delta_time)
+        self._latitude = self._latitude + np.rad2deg ( (0.5* (vn + vn_Prev ) * self._delta_time ) / (self._Rn + self._altitude) ) 
+        self._longitude = self._longitude + np.rad2deg ( ( 0.5 * (ve +  ve_Prev) * self._delta_time ) / ((self._Rn + self._altitude) * np.cos(self._latitude)) ) 
         # print ("Updated Positions",  [self._latitude, self._longitude, self._altitude ])
          
     def CorrectAzimuth (self):

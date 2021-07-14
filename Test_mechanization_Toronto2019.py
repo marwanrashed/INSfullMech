@@ -1,7 +1,7 @@
 '''
 Property of: NavINST Laboratory
 Author: Marwan A. Rashed
-Description: Test file of the mechanization class
+Description: Test file of the mechanization class on Toronto 2019 dataset
 '''
 from datetime import time
 from IntializationParameters import InitINS
@@ -78,9 +78,9 @@ for i in range (start_time+1 , duration_2 ):
     # print ("Reference azimuth", AZIMUTH[i])
     # print ("Reference Velocities", [Ve[i], Vn[i], Vu[i]])
     # print ("Reference Position",[LAT[i], LON[i], ALT[i]])
-    # INS_Mechanize.compile_standalone ( 
-    #             wx[i], wy[i], wz[i]
-    #             , fx[i], fy[i],fz[i]) 
+    INS_Mechanize.compile_standalone ( 
+                wx[i], wy[i], wz[i]
+                , fx[i], fy[i],fz[i]) 
     
     # INS_Mechanize.compile_closed_loop ( 
     #         wx[i], wy[i], wz[i]
