@@ -89,6 +89,7 @@ class InitINS ():
         '''
         Proj_Lat = np.sin( self.Init_Lat ) # Projection of the latitude after degree to raddian transformation
         self._Local_g = self.a1  * (1 + (self.a2* (Proj_Lat**2) ) + (   self.a3  * (Proj_Lat**4) ) ) + ( ( self.a4 + (self.a5 * (Proj_Lat**2)) ) *  self.Init_Alt ) + self.a6 * (self.Init_Alt**2)
+        self._gVector = np.array([ 0, 0, - self._Local_g]) 
         # return self._Local_g
 
     def Init_Velocity (self, Initial_ve = 0 , Initial_vn= 0, Initial_vu = 0):

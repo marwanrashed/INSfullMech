@@ -15,6 +15,17 @@ def down_sample(signal , down_sample_bin ):
         signal_new[i] = np.mean(signal[frm:to])
     return signal_new
 
+def down_sample_time(signal , down_sample_bin ):
+    L = len(signal)
+    L_new = int(np.floor(L/down_sample_bin))
+    signal_new = np.zeros(L_new)
+
+    for i in range(L_new):
+        pick_time = i * down_sample_bin
+        signal_new[i] = signal[pick_time]
+    return signal_new
+
+
 def upsample_signal(signal , up_sample_factor):
     d = 1.0/up_sample_factor
     return np.interp(np.arange(0, len(signal), d), np.arange(0, len(signal)), signal)
@@ -37,7 +48,7 @@ def load_IMU_dataset(imu_file_path, IMU_CHOICE, Freq_INS):
     down_sampleBin_imu = int(np.round(Freq_imu / Freq_INS))
     print('downsampling window  = ' , down_sampleBin_imu)
     #downsample time
-    time_imu = down_sample(time_imu , down_sampleBin_imu)
+    time_imu = down_sample_time(time_imu , down_sampleBin_imu)
     #-----------------------------------------------
     #accelorometer data
     fx_imu = imu_data['f']['x'][0,0][:,0]
@@ -81,6 +92,44 @@ def load_IMU_dataset(imu_file_path, IMU_CHOICE, Freq_INS):
     imu_data['wy'] = wy_imu
     imu_data['wz'] = wz_imu   
     
+    return imu_data
+
+def load_IMU_data_no_downsampling (imu_file_path, IMU_CHOICE ):
+    imu_data = sio.loadmat(imu_file_path)
+    #get all important data
+    #Time
+    time_imu = imu_data.get('IMU_second')[0][:] 
+    #sample time
+    dt_imu = imu_data.get('sample_time')[0][:]
+    
+    #get imu frequency
+    Freq_imu = np.round(1 / np.mean(time_imu[1:] - time_imu[:-1]))
+    print('imu frequency = ' , Freq_imu , ' Hz')
+    #-----------------------------------------------
+    #accelorometer data
+    fx_imu = imu_data['f']['x'][0,0][0,:]
+    fy_imu = imu_data['f']['y'][0,0][0,:]
+    # if IMU_CHOICE == KVH:
+    #     fy_imu = fy_imu* -1 # special case for the accelerometer of imu is inverted
+    fz_imu = imu_data['f']['z'][0,0][0,:]
+    #-----------------------------------------------
+    #Gyro data
+    wx_imu = imu_data['w']['x'][0,0][0,:]
+    wy_imu = imu_data['w']['y'][0,0][0,:] 
+    # if IMU_CHOICE == KVH:
+    #     wy_imu = wy_imu* -1 # special case for the accelerometer of imu is inverted
+    wz_imu = imu_data['w']['z'][0,0][0,:]
+
+    imu_data = dict()
+    imu_data['time'] = time_imu
+    imu_data['sample_time'] = dt_imu
+    imu_data['fx'] = fx_imu
+    imu_data['fy'] = fy_imu
+    imu_data['fz'] = fz_imu
+    imu_data['wx'] = wx_imu
+    imu_data['wy'] = wy_imu
+    imu_data['wz'] = wz_imu   
+
     return imu_data
 #################################################################################
 ######################### Loading Ref Data ######################################

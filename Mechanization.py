@@ -1,5 +1,6 @@
 from IntializationParameters import InitINS
 import numpy as np
+from decimal import Decimal
 
 
 class Mechanization (InitINS): 
@@ -16,11 +17,13 @@ class Mechanization (InitINS):
     def RadiiM (self):
         latitude = np.deg2rad(self._latitude)
         # print ("Latitude in radian", latitude )
-        self._Rm =  ( self.a *(1-self.e2) ) / ( (1- self.e2 * np.sin(latitude) * np.sin(latitude) )**(1.5) )
+        self._Rm =  ( self.a *(1-self.e2) ) / ( (1- self.e2 * np.sin(latitude) * np.sin(latitude) )**(1.5) )  
+        # self._Rm = 6378137.0  
         # print ("Meredian Radius", self._Rm )
     def RadiiN (self):
         latitude = np.deg2rad(self._latitude)
         self._Rn = self.a / np.sqrt ( 1- ( self.e2 * np.sin (latitude) * np.sin (latitude) ) )
+        # self._Rn = 6356752.3
         # print ("nORMAL Radius", self._Rn )
     ### Calculate Transformation from ECF to Local level frame
     def R_EL (self) :
@@ -209,9 +212,9 @@ class Mechanization (InitINS):
     
 
     def UpdateG (self):
-        # latitude = self._latitude
-        # Proj_Lat = np.sin(latitude) # Projection of the latitude after degree to raddian transformation
-        # self._Local_g = self.a1  * (1 + (self.a2* (Proj_Lat**2) ) + (   self.a3  * (Proj_Lat**4) ) ) + ( ( self.a4 + (self.a5 * (Proj_Lat**2)) ) *  self._altitude ) + self.a6 * (self._altitude**2)
+        latitude = np.deg2rad (self._latitude)
+        Proj_Lat = np.sin(latitude) # Projection of the latitude after degree to raddian transformation
+        self._Local_g = self.a1  * (1 + (self.a2* (Proj_Lat**2) ) + (   self.a3  * (Proj_Lat**4) ) ) + ( ( self.a4 + (self.a5 * (Proj_Lat**2)) ) *  self._altitude ) + self.a6 * (self._altitude**2)
         self._gVector = np.array([ 0, 0, - self._Local_g]) 
         # print ("updated g constant: ", self._gVector)
     def UpdateDeltaVelocity (self):
@@ -233,9 +236,10 @@ class Mechanization (InitINS):
     def UpdatePosition (self):
         ve_Prev, vn_Prev, vu_Prev = self._prev_vl[0], self._prev_vl[1], self._prev_vl[2]
         ve, vn, vu = self._vl[0], self._vl[1], self._vl[2]
-        self._altitude = self._altitude +  (0.5 * (vu + vu_Prev ) * self._delta_time)
-        self._latitude = self._latitude + np.rad2deg ( (0.5* (vn + vn_Prev ) * self._delta_time ) / (self._Rn + self._altitude) ) 
-        self._longitude = self._longitude + np.rad2deg ( ( 0.5 * (ve +  ve_Prev) * self._delta_time ) / ((self._Rn + self._altitude) * np.cos(self._latitude)) ) 
+        
+        self._longitude = self._longitude + np.rad2deg ( 0.5 * ( ve + ve_Prev) / ((self._Rn + self._altitude) * np.cos(np.deg2rad(self._latitude))) )  * self._delta_time
+        self._latitude = self._latitude + np.rad2deg ( 0.5 *  (vn + vn_Prev ) / (self._Rm + self._altitude) ) * self._delta_time
+        self._altitude = self._altitude +  ( 0.5 * (vu + vu_Prev)* self._delta_time ) 
         # print ("Updated Positions",  [self._latitude, self._longitude, self._altitude ])
          
     def CorrectAzimuth (self):
@@ -277,7 +281,7 @@ class Mechanization (InitINS):
         self.OMEGA_IE_L()
         self.OMEGA_EL_L()
         self.UpdateAccelerometers(fx,fy,fz)
-        self.UpdateG()
+        # self.UpdateG()
         self.UpdateDeltaVelocity ()
         self.UpdateVelocity ()
         ##### Stage 6: updating position components #######
@@ -324,7 +328,7 @@ class Mechanization (InitINS):
         self.OMEGA_IE_L()
         self.OMEGA_EL_L()
         self.UpdateAccelerometers(fx,fy,fz)
-        self.UpdateG()
+        # self.UpdateG()  
         self.UpdateDeltaVelocity ()
         self.UpdateVelocity ()
         ##### Stage 6: updating position components #######
